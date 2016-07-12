@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">CardWallet</string>
+
+    <!-- para login -->
+    <string name="prompt_user">Usuario</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Acceder</string>
+    <string name="action_sign_in_short">Acceder</string>
+    <string name="error_invalid_password">Contraseña muy corta</string>
+    <string name="error_incorrect_password">Usuario y/o contraseña incorrecta</string>
+    <string name="error_field_required">Campo requerido</string>
+    <string name="insert_card">Ingrese la tarjeta</string>
+    <string name="simple_ime">Simple IME</string>
+    <string name="subtype_es_PY">Español (PY)</string>
+    <string name="amount">Ingrese monto a cobrar</string>
+</resources>
