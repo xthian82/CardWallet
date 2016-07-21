@@ -1,48 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout
-xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:layout_weight="12"
-tools:context="itconsultores.com.py.testlogin.CardReadActivity">
-
-    <ProgressBar
-        android:id="@+id/card_read_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="3"
-        android:visibility="gone"/>
-
-<LinearLayout
-    android:id="@+id/read_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:orientation="vertical">
-    <TextView
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:textColor="#222"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="@string/insert_card"
-        android:layout_weight="4"
-        android:textSize="42dp" />
 
-    <ImageView
-        android:id="@+id/card_img_gif"
+<!--
+tools:context="itconsultores.com.py.testlogin.CardReadActivity" -->
+
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:src="@mipmap/ic_payment_black"
-        />
-</LinearLayout>
+        android:layout_margin="8dp"
+        android:elevation="8dp">
+        <ImageView
+            android:id="@+id/card_img_gif"
+            android:layout_width="match_parent"
+            android:adjustViewBounds="true"
+            android:layout_height="match_parent"
+            android:src="@drawable/img_acr35"
+            />
+
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_margin="8dp"
+        android:elevation="4dp">
+
+        <Button
+            android:id="@+id/button_read"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
 
 </LinearLayout>

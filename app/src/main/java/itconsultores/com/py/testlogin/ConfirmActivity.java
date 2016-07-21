@@ -1,9 +1,9 @@
 package itconsultores.com.py.testlogin;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 
-public class ConfirmActivity extends AppCompatActivity {
+public class ConfirmActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

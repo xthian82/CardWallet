@@ -1,9 +1,11 @@
 package itconsultores.com.py.testlogin;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,12 +27,15 @@ import android.widget.TextView;
  * Login screen
  * @author Jerry
  */
+
 public class LoginActivity extends AppCompatActivity {
 
     //TODO: autenticar via REST/SOAP
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "admin:pase1", "user:123456"
     };
+
+    private static final int RECORD_AUDIO_PERMISSION = 1 ;
     private static final String TAG = "LoginActivity";
     //Task login, se cancela si es solicitado por user
     private UserLoginTask mAuthTask = null;
@@ -43,10 +48,25 @@ public class LoginActivity extends AppCompatActivity {
     private static boolean mAuthenticated = false;
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] result){
+        super.onRequestPermissionsResult(requestCode, permissions, result);
+
+
+        if(requestCode == RECORD_AUDIO_PERMISSION && result[0] == PackageManager.PERMISSION_GRANTED){
+            //do things as usual init map or something else when location permission is granted
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate(savedInstanceState)");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && getApplicationContext().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION);
+
+        }
         //  login form.
         mUserView = (AutoCompleteTextView) findViewById(R.id.user);
 
@@ -243,12 +263,6 @@ public class LoginActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         Log.d(TAG, "onSaveInstanceState(outState, outPersistentState)");
-    }
-
-    @Override
-    public void onStateNotSaved() {
-        super.onStateNotSaved();
-        Log.d(TAG, "onStateNotSaved()");
     }
 
     @Override

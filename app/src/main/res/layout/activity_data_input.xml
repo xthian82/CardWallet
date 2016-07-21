@@ -14,6 +14,21 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/user_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="User 0987124555"
+            android:textSize="24dp" />
+
+        <TextView
+            android:id="@+id/user_data_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="User 0987124555"
+            android:textSize="24dp" />
+
+        <TextView
+            android:id="@+id/user_data_cell"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="User 0987124555"
@@ -25,7 +40,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/amount"
-            android:inputType="numberDecimal">
+            android:shadowRadius="@android:integer/config_longAnimTime"
+
+            android:inputType="numberDecimal"
+            android:digits="0123456789  1p">
             <requestFocus />
         </EditText>
         <Button

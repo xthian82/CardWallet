@@ -14,5 +14,7 @@
     <string name="simple_ime">Simple IME</string>
     <string name="subtype_en_US">English (US)</string>
     <string name="amount">Charge amount</string>
+    <string name="info">Information</string>
+    <string name="message_reset_info_volume">In order to reset the reader, please adjust the volume to maximum.</string>
 
 </resources>
