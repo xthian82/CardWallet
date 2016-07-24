@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,24 +13,32 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.acs.audiojack.AudioJackReader;
-import com.acs.audiojack.DukptReceiver;
 import com.acs.audiojack.Result;
 
 public class CardReadActivity extends AppCompatActivity {
-    public static final String USER_DATA_TAG = "userData";
     private static final String TAG = "CardReadActivity" ;
-    private ReadingCardTask mAuthTask = null;
+    public static final String USER_DATA_TAG = "userData";
+
     private AudioManager mAudioManager;
     private AudioJackReader mReader;
     private Object mResponseEvent = new Object();
-    private DukptReceiver mDukptReceiver = new DukptReceiver();
-    private boolean mFirmwareVersionReady;
-    private String mFirmwareVersion;
     private Button mButton;
     private boolean mResultReady;
-    private boolean mDeviceIdReady;
-    private byte[] mDeviceId;
+    private boolean mPiccAtrReady;
+    private byte[] mPiccAtr;
     private Result mResult;
+
+    private boolean mPiccResponseApduReady;
+    private byte[] mPiccResponseApdu;
+
+    private int mPiccTimeout = 3;
+    private int mPiccCardType = AudioJackReader.PICC_CARD_TYPE_ISO14443_TYPE_A
+                                | AudioJackReader.PICC_CARD_TYPE_ISO14443_TYPE_B
+                                | AudioJackReader.PICC_CARD_TYPE_FELICA_212KBPS
+                                | AudioJackReader.PICC_CARD_TYPE_FELICA_424KBPS
+                                | AudioJackReader.PICC_CARD_TYPE_AUTO_RATS;
+    private byte[] mPiccCommandApdu;
+
 
     private final BroadcastReceiver mHeadsetPlugReceiver = new BroadcastReceiver() {
 
@@ -42,31 +49,104 @@ public class CardReadActivity extends AppCompatActivity {
 
                 boolean plugged = (intent.getIntExtra("state", 0) == 1);
 
-                /* Mute the audio output if the reader is unplugged. */
+                // Mute the audio output if the reader is unplugged.
                 mReader.setMute(!plugged);
             }
         }
     };
 
-    private class OnGetFirmwareClickListener implements View.OnClickListener{
+    /**
+     * Clase principal que maneja la lectura del contacless card ...
+     *
+     * Implementa un theread para realizar el proceso de lectura del dispositivo.
+     * Pasos
+     *    1) AudioJackReader.piccPowerOn => prender el jack manager (onPiccAtrAvailable al estar disponible).
+     *    2) AudioJackReader.piccTransmit => iniciar el proceso de lectura (onPiccResponseApduAvailable al leer todo)
+     *    3) AudioJackReader.piccPowerOff => Apagar el el jack manager
+     *    4) AudioJackReader.sleep() => entrar en sleep para posterior wakeup
+     */
+    private class Transmit implements Runnable {
+        boolean killMe = false;
+        int itersWithoutResponse = 0;
+        boolean readerConnected = false;
+
+        public void kill(){
+            Log.d(TAG, "OnPiccTransmitPreferenceClickListener kill...");
+            killMe = true;
+        }
 
         @Override
-        public void onClick(View v) {
-            /* Check the reset volume. */
+        public void run() {
+            mPiccAtrReady = false;
+            while (!killMe) {
+                // para reintantar conexion
+                if(!readerConnected){
+                    itersWithoutResponse++;
+                    Log.d(TAG, "OnPiccTransmitPreferenceClickListener !readerConnected...");
+                }
+
+                if(itersWithoutResponse == 4) {
+                    Log.d(TAG, "Transmit itersWithoutResponse == 4...");
+                    kill();
+                } else{
+                    Log.d(TAG, "OnPiccTransmitPreferenceClickListener mReader.piccPowerOn(mPiccTimeout, mPiccCardType) ...");
+                    if (!mReader.piccPowerOn(mPiccTimeout, mPiccCardType)) {
+
+                        showRequestQueueError();
+
+                    } else {
+                        showPiccAtr();
+
+                        if (mPiccAtrReady) {
+                            readerConnected = true;
+                            Log.d(TAG, "mReader.piccTransmit(mPiccTimeout, mPiccCommandApdu)...");
+                            if (mReader.piccTransmit(mPiccTimeout, mPiccCommandApdu)) {
+                                showPiccResponseApdu();
+                                kill();
+                            }
+                        }
+                    }
+                }
+            }
+            Log.d(TAG, "OnPiccTransmitPreferenceClickListener piccPowerOff...");
+            mReader.piccPowerOff();
+            Log.d(TAG, "OnPiccTransmitPreferenceClickListener sleep...");
+            mReader.sleep();
+        }
+    }
+
+    private class OnPiccTransmitPreferenceClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+
             if (!checkResetVolume()) {
                 return;
             }
 
-            /* Reset the reader. */
-            Log.d("/*/*/*/*/**", "readerReset");
-            mReader.reset(new OnResetCompleteListener());
+            mReader.reset( new AudioJackReader.OnResetCompleteListener () {
+                public void onResetComplete(AudioJackReader reader) {
+                    Log.d(TAG, "OnPiccTransmitPreferenceClickListener::onClick::onResetComplete");
+                    // esperamos medio segundo
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), getApplication().getString(R.string.reading_card), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    new Thread(new Transmit()).start();
+                }
+            });
         }
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_read);
 
@@ -75,73 +155,26 @@ public class CardReadActivity extends AppCompatActivity {
 
         mReader = new AudioJackReader(mAudioManager, true);
 
-
-
-        /* Register the headset plug receiver. */
+        // Registrar headset plug receiver.
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(mHeadsetPlugReceiver, filter);
 
+        mPiccCommandApdu = Utils.toByteArray(APDUCommands.GET_ATR);
 
-        //checkResetVolume();
+        // PICC "Transmit" preference click callback.
+        mButton.setOnClickListener(new OnPiccTransmitPreferenceClickListener());
 
-        mAuthTask = new ReadingCardTask( );
-        mReader.reset();
+        // PICC response APDU callback.
+        mReader.setOnPiccResponseApduAvailableListener(new OnPiccResponseApduAvailableListener());
 
-        /* Set the "Get firmware version" preference click callback. */
-        mButton.setOnClickListener(new OnGetFirmwareClickListener());
-
-        /* Set the result callback. */
-        //mReader.setOnResultAvailableListener(new OnResultAvailableListener());
-
-        /* Set the firmware version callback. */
-        mReader.setOnFirmwareVersionAvailableListener(new OnFirmwareVersionAvailableListener());
-
-
-
-
-//        /* Set the status callback. */
-//        mReader.setOnStatusAvailableListener(new OnStatusAvailableListener());
-//
-//        /* Set the track data notification callback. */
-//        mReader.setOnTrackDataNotificationListener(new OnTrackDataNotificationListener());
-//
-//        /* Set the track data callback. */
-//        mReader.setOnTrackDataAvailableListener(new OnTrackDataAvailableListener());
-//
-//        /* Set the raw data callback. */
-//        mReader.setOnRawDataAvailableListener(new OnRawDataAvailableListener());
-//
-//        /* Set the custom ID callback. */
-//        mReader.setOnCustomIdAvailableListener(new OnCustomIdAvailableListener());
-//
-        /* Set the device ID callback. */
-        mReader.setOnDeviceIdAvailableListener(new OnDeviceIdAvailableListener());
-//
-//        /* Set the DUKPT option callback. */
-//        mReader.setOnDukptOptionAvailableListener(new OnDukptOptionAvailableListener());
-//
-//        /* Set the track data option callback. */
-//        mReader.setOnTrackDataOptionAvailableListener(new OnTrackDataOptionAvailableListener());
-//
-//        /* Set the PICC ATR callback. */
-//        mReader.setOnPiccAtrAvailableListener(new OnPiccAtrAvailableListener());
-//
-//        /* Set the PICC response APDU callback. */
-//        mReader.setOnPiccResponseApduAvailableListener(new OnPiccResponseApduAvailableListener());
-//
-//        /* Set the key serial number. */
-//        mDukptReceiver.setKeySerialNumber(mIksn);
-//
-//        /* Load the initial key. */
-//        mDukptReceiver.loadInitialKey(mIpek);
-
+        // PICC ATR callback.
+        mReader.setOnPiccAtrAvailableListener(new OnPiccAtrAvailableListener());
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy");
-        /* Unregister the headset plug receiver. */
+        // Quitar headset plug receiver.
         unregisterReceiver(mHeadsetPlugReceiver);
 
         super.onDestroy();
@@ -149,173 +182,160 @@ public class CardReadActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        Log.e(TAG, "onStart");
-
         super.onStart();
-
         mReader.start();
     }
 
     @Override
     protected void onResume() {
-        Log.e(TAG, "onResume");
         super.onResume();
         mReader.start();
     }
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause");
         super.onPause();
         mReader.stop();
     }
 
     @Override
     protected void onStop() {
-        Log.e(TAG, "onStop");
         super.onStop();
         mReader.stop();
     }
 
-    // Tarea asincrona para leer la tarjeta.
-
-    public class ReadingCardTask extends AsyncTask<Void, Void, UserData> {
-
-
-        public ReadingCardTask( ) {
-        }
-
-
-        @Override
-        protected UserData doInBackground(Void... params) {
-            //TODO: usar el api MCR35 para leer los datos de la tarjeta
-            final UserData user = new UserData();
-
-            try {
-
-
-            } catch (Exception e) {
-                return null;
-            }
-            user.setCardId("23235325");
-            user.setCardName("Fulando Mengano");
-            user.setCardPhone("0981555555");
-
-            return user;
-        }
-
-        @Override
-        protected void onPostExecute(final UserData user) {
-            mAuthTask = null;
-            //mReader.stop();
-           // showProgress(false);
-
-            if (user != null) {
-                Intent dataInputIntent = new Intent(getApplicationContext(), DataInputActivity.class);
-                dataInputIntent.putExtra(USER_DATA_TAG, user);
-                startActivity(dataInputIntent);
-            } else {
-                Toast.makeText(CardReadActivity.this, "Problema al leer la tarjeta ...",Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-
-            //mReader.stop();
-            //showProgress(false);
-        }
-
-
-
-
-    }
-
     /**
-     * Checks the reset volume.
+     * Verificar el volumen, debe estar al maximo
      *
-     * @return true if current volume is equal to maximum volume.
+     * @return true si el volumen esta al maximo.
      */
     private boolean checkResetVolume() {
 
         boolean ret = true;
 
-        int currentVolume = mAudioManager
-                .getStreamVolume(AudioManager.STREAM_MUSIC);
+        int currentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
-        int maxVolume = mAudioManager
-                .getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int maxVolume = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 
         if (currentVolume < maxVolume) {
 
-            //showMessageDialog(R.string.info, R.string.message_reset_info_volume);
-            Toast.makeText(getApplicationContext(), R.string.message_reset_info_volume,
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.message_reset_info_volume, Toast.LENGTH_LONG).show();
             ret = false;
         }
 
         return ret;
     }
 
-
-    private class OnFirmwareVersionAvailableListener implements AudioJackReader.OnFirmwareVersionAvailableListener {
+    private class OnPiccResponseApduAvailableListener implements AudioJackReader.OnPiccResponseApduAvailableListener {
 
         @Override
-        public void onFirmwareVersionAvailable(AudioJackReader reader,
-                                               String firmwareVersion) {
-
+        public void onPiccResponseApduAvailable(AudioJackReader reader, byte[] responseApdu) {
+            Log.d(TAG, "OnPiccResponseApduAvailableListener::onPiccResponseApduAvailable");
             synchronized (mResponseEvent) {
 
-                /* Store the firmware version. */
-                mFirmwareVersion = firmwareVersion;
+                 /* Wait for the PICC response APDU. */
+                /*while (!mPiccResponseApduReady && !mResultReady) {
 
-                /* Trigger the response event. */
-                mFirmwareVersionReady = true;
+                    try {
+                        mResponseEvent.wait(3000);
+                    } catch (InterruptedException e) {
+                    }
+
+                    break;
+                } */
+
+                // guardar la respuesta APDU.
+                mPiccResponseApdu = new byte[responseApdu.length];
+                System.arraycopy(responseApdu, 0, mPiccResponseApdu, 0, responseApdu.length);
+
+                // Trigger the response event.
+                mPiccResponseApduReady = true;
+                mResultReady = true;
+                Log.d(TAG,  Utils.toHexString(responseApdu));
                 mResponseEvent.notifyAll();
+
             }
+            //mPiccResponseApduReady = false;
+            //mResultReady = false;
         }
     }
 
-    public class OnResetCompleteListener implements AudioJackReader.OnResetCompleteListener {
+    private void showRequestQueueError() {
 
-        public OnResetCompleteListener() {
-            Log.d("/*/*/*/","OnResetCompleteListener");
-        }
-        @Override
-        public void onResetComplete(AudioJackReader reader) {
+        runOnUiThread(new Runnable() {
 
-                /* Get the firmware version. */
-            mFirmwareVersionReady = false;
-            mResultReady = false;
-            if (!reader.getFirmwareVersion()) {
+            @Override
+            public void run() {
 
-                /* Show the request queue error. */
-                Log.e("/*/*/*/*", "The request cannot be queued.");
-                /* Show the request queue error. */
-                Toast.makeText(getApplicationContext(), "The request cannot be queued.",
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "The request cannot be queued.", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showPiccResponseApdu() {
+        Log.d(TAG, "showPiccResponseApdu");
+
+        synchronized (mResponseEvent) {
+
+            // Wait for the PICC response APDU.
+            while (!mPiccResponseApduReady && !mResultReady) {
+
+                try {
+                    mResponseEvent.wait(5000);
+                } catch (InterruptedException e) {
+                }
+
+                break;
+            }
+
+            if (mPiccResponseApduReady) {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        Toast.makeText(getApplicationContext(), Utils.toHexString(mPiccResponseApdu), Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            } else if (mResultReady) {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        Toast.makeText(getApplicationContext(),
+                                Utils.toErrorCodeString(mResult.getErrorCode()),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
 
             } else {
 
-                /* Show the firmware version. */
-                Log.d("*/*/*/*/*/*/", "showFirmVer");
-                showFirmwareVersion();
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        Toast.makeText(getApplicationContext(), "The operation timed out.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
             }
+
+            mPiccResponseApduReady = false;
+            mResultReady = false;
         }
-
-
     }
 
-    /**
-     * Shows the firmware version.
-     */
-    private void showFirmwareVersion() {
-        Log.d("/*/*//","enter showFirmwareVersion");
+    private void showPiccAtr() {
+        Log.d(TAG, "showPiccAtr");
         synchronized (mResponseEvent) {
 
-            /* Wait for the firmware version. */
-            while (!mFirmwareVersionReady && !mResultReady) {
+            // Esperar PICC ATR.
+            while (!mPiccAtrReady && !mResultReady) {
 
                 try {
                     mResponseEvent.wait(10000);
@@ -325,20 +345,15 @@ public class CardReadActivity extends AppCompatActivity {
                 break;
             }
 
-            if (mFirmwareVersionReady) {
+            if (mPiccAtrReady) {
+
                 runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
-
-                        /* Show the timeout. */
-                        Toast.makeText(
-                                getApplicationContext(),
-                                mFirmwareVersion,
-                                Toast.LENGTH_LONG).show();
+                        Log.d(TAG, Utils.toHexString(mPiccAtr));
                     }
                 });
-
 
             } else if (mResultReady) {
 
@@ -346,97 +361,38 @@ public class CardReadActivity extends AppCompatActivity {
 
                     @Override
                     public void run() {
-
-                        /* Show the timeout. */
-                        Toast.makeText(
-                                getApplicationContext(),
-                                toErrorCodeString(mResult.getErrorCode()),
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), Utils.toErrorCodeString(mResult.getErrorCode()), Toast.LENGTH_LONG).show();
                     }
                 });
 
-
             } else {
-                    /* Show the timeout. */
 
                 runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
-
-                        /* Show the timeout. */
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "The operation timed out.",
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "The operation timed out.", Toast.LENGTH_LONG).show();
                     }
                 });
-
             }
 
-            mFirmwareVersionReady = false;
             mResultReady = false;
         }
     }
 
-    private String toErrorCodeString(int errorCode) {
-        String errorCodeString = null;
-
-        switch (errorCode) {
-            case Result.ERROR_SUCCESS:
-                errorCodeString = "The operation completed successfully.";
-                break;
-            case Result.ERROR_INVALID_COMMAND:
-                errorCodeString = "The command is invalid.";
-                break;
-            case Result.ERROR_INVALID_PARAMETER:
-                errorCodeString = "The parameter is invalid.";
-                break;
-            case Result.ERROR_INVALID_CHECKSUM:
-                errorCodeString = "The checksum is invalid.";
-                break;
-            case Result.ERROR_INVALID_START_BYTE:
-                errorCodeString = "The start byte is invalid.";
-                break;
-            case Result.ERROR_UNKNOWN:
-                errorCodeString = "The error is unknown.";
-                break;
-            case Result.ERROR_DUKPT_OPERATION_CEASED:
-                errorCodeString = "The DUKPT operation is ceased.";
-                break;
-            case Result.ERROR_DUKPT_DATA_CORRUPTED:
-                errorCodeString = "The DUKPT data is corrupted.";
-                break;
-            case Result.ERROR_FLASH_DATA_CORRUPTED:
-                errorCodeString = "The flash data is corrupted.";
-                break;
-            case Result.ERROR_VERIFICATION_FAILED:
-                errorCodeString = "The verification is failed.";
-                break;
-            case Result.ERROR_PICC_NO_CARD:
-                errorCodeString = "No card in PICC slot.";
-                break;
-            default:
-                errorCodeString = "Error communicating with reader.";
-                break;
-        }
-
-        return errorCodeString;
-    }
-    private class OnDeviceIdAvailableListener implements
-            AudioJackReader.OnDeviceIdAvailableListener {
+    private class OnPiccAtrAvailableListener implements AudioJackReader.OnPiccAtrAvailableListener {
 
         @Override
-        public void onDeviceIdAvailable(AudioJackReader reader, byte[] deviceId) {
-
+        public void onPiccAtrAvailable(AudioJackReader reader, byte[] atr) {
+            Log.d(TAG, "OnPiccAtrAvailableListener::onPiccAtrAvailable");
             synchronized (mResponseEvent) {
 
-                /* Store the custom ID. */
-                mDeviceId = new byte[deviceId.length];
-                System.arraycopy(deviceId, 0, mDeviceId, 0, deviceId.length);
+                // Guardar PICC ATR.
+                mPiccAtr = new byte[atr.length];
+                System.arraycopy(atr, 0, mPiccAtr, 0, atr.length);
 
-                /* Trigger the response event. */
-                mDeviceIdReady = true;
+                // Disparar evento de respuesta.
+                mPiccAtrReady = true;
                 mResponseEvent.notifyAll();
             }
         }

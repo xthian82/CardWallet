@@ -14,5 +14,6 @@
     <string name="subtype_es_PY">Español (PY)</string>
     <string name="amount">Ingrese monto a cobrar</string>
     <string name="info">Informacion</string>
-    <string name="message_reset_info_volume">In order to reset the reader, please adjust the volume to maximum.</string>
+    <string name="reading_card">Leyendo Tarjeta ... </string>
+    <string name="message_reset_info_volume">Favor ajustar el volumen al maximo.</string>
 </resources>

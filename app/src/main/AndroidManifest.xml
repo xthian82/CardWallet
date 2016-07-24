@@ -23,7 +23,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".CardReadActivity" android:screenOrientation="portrait">
+            <!--<intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>-->
             </activity>
         <activity android:name=".DataInputActivity" android:screenOrientation="portrait" />
         <activity android:name=".ConfirmActivity" android:screenOrientation="portrait"></activity>
