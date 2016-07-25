@@ -15,5 +15,7 @@
     <string name="amount">Ingrese monto a cobrar</string>
     <string name="info">Informacion</string>
     <string name="reading_card">Leyendo Tarjeta ... </string>
+    <string name="read_card_action">Leer Tarjeta</string>
+    <string name="user_not_found">Usuario no encontrado</string>
     <string name="message_reset_info_volume">Favor ajustar el volumen al maximo.</string>
 </resources>

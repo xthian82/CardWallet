@@ -1,5 +1,7 @@
 package itconsultores.com.py.testlogin;
 
+import android.util.Log;
+
 import com.acs.audiojack.Result;
 
 import java.util.Locale;
@@ -32,7 +34,7 @@ public class Utils {
             }
         }
 
-        return bufferString;
+        return bufferString.trim();
     }
 
     /**
@@ -148,6 +150,7 @@ public class Utils {
         int length = 0;
         int value = 0;
 
+        Log.d(CardReadActivity.TAG, "hexString== " + hexString);
         // Count number of hex characters
         for (i = 0; i < hexString.length(); i++) {
 

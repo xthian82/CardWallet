@@ -16,6 +16,8 @@
     <string name="amount">Charge amount</string>
     <string name="info">Information</string>
     <string name="reading_card">Reading Card ...</string>
+    <string name="read_card_action">Read card</string>
+    <string name="user_not_found">User not found</string>
     <string name="message_reset_info_volume">Please adjust the volume to maximum.</string>
 
 </resources>

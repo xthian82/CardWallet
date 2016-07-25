@@ -16,7 +16,7 @@ import com.acs.audiojack.AudioJackReader;
 import com.acs.audiojack.Result;
 
 public class CardReadActivity extends AppCompatActivity {
-    private static final String TAG = "CardReadActivity" ;
+    public static final String TAG = "CardReadActivity" ;
     public static final String USER_DATA_TAG = "userData";
 
     private AudioManager mAudioManager;
@@ -251,7 +251,7 @@ public class CardReadActivity extends AppCompatActivity {
                 // Trigger the response event.
                 mPiccResponseApduReady = true;
                 mResultReady = true;
-                Log.d(TAG,  Utils.toHexString(responseApdu));
+                //Log.d(TAG,  Utils.toHexString(responseApdu));
                 mResponseEvent.notifyAll();
 
             }
@@ -274,6 +274,7 @@ public class CardReadActivity extends AppCompatActivity {
 
     private void showPiccResponseApdu() {
         Log.d(TAG, "showPiccResponseApdu");
+        UserData user = null;
 
         synchronized (mResponseEvent) {
 
@@ -289,15 +290,17 @@ public class CardReadActivity extends AppCompatActivity {
             }
 
             if (mPiccResponseApduReady) {
+                String data = Utils.toHexString(mPiccResponseApdu);
+                Log.d(TAG, "Leido =>" + data);
+                user = getUserData(data);
 
-                runOnUiThread(new Runnable() {
+                /*runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
-
                         Toast.makeText(getApplicationContext(), Utils.toHexString(mPiccResponseApdu), Toast.LENGTH_LONG).show();
                     }
-                });
+                });*/
 
             } else if (mResultReady) {
 
@@ -327,7 +330,43 @@ public class CardReadActivity extends AppCompatActivity {
 
             mPiccResponseApduReady = false;
             mResultReady = false;
+
+            Log.d(TAG, "comparing user");
+            if (user != null) {
+                Intent dataInputIntent = new Intent(getApplicationContext(), DataInputActivity.class);
+                dataInputIntent.putExtra(CardReadActivity.USER_DATA_TAG, user);
+                startActivity(dataInputIntent);
+            } else {
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.user_not_found), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
         }
+    }
+
+    private UserData getUserData(String s) {
+        UserData data = null;
+
+        if ("04 B1 89 7A 29 49 80 90 00".equals(s)) {
+            data = new UserData();
+
+            data.setCardId("23235325");
+            data.setCardName("Fulando Mengano");
+            data.setCardPhone("0981555555");
+        } else if ("04 E0 56 BA 51 42 80 90 00".equals(s)) {
+            data = new UserData();
+
+            data.setCardId("23235300");
+            data.setCardName("Fulando2 Mengano2");
+            data.setCardPhone("0983777777");
+        }
+
+        return data;
     }
 
     private void showPiccAtr() {
