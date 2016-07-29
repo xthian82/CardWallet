@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CardWallet</string>
+    <string name="app_name">TigoPos</string>
 
     <!-- para login -->
     <string name="prompt_user">Usuario</string>
@@ -12,10 +12,11 @@
     <string name="insert_card">Ingrese la tarjeta</string>
     <string name="simple_ime">Simple IME</string>
     <string name="subtype_es_PY">Español (PY)</string>
-    <string name="amount">Ingrese monto a cobrar</string>
+    <string name="amount">Ingrese monto</string>
     <string name="info">Informacion</string>
     <string name="reading_card">Leyendo Tarjeta ... </string>
     <string name="read_card_action">Leer Tarjeta</string>
     <string name="user_not_found">Usuario no encontrado</string>
     <string name="message_reset_info_volume">Favor ajustar el volumen al maximo.</string>
+    <string name="action_new_transaction">Nueva Transacción</string>
 </resources>

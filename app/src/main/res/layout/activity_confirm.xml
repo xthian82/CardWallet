@@ -4,29 +4,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="itconsultores.com.py.testlogin.ConfirmActivity">
+    tools:context="itconsultores.com.py.testlogin.ConfirmActivity"
+    android:background="@color/tigo_yellow"
+    >
+
+    <ImageView
+        android:id="@+id/card_img_gif"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/tigo_money_button"
+        android:layout_margin="30dp"
+        />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cobrar monto 1200?"
-        android:id="@+id/textView"
+        android:id="@+id/amount_charge"
         android:layout_marginLeft="5dp"
-        android:textSize="42dp" />
+        android:textSize="30dp"
+        android:textAlignment="center"
+        />
 
-    <EditText
+    <!--<EditText
         android:id="@+id/pin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Ingrese pin"
         android:inputType="numberDecimal">
         <requestFocus />
-    </EditText>
+    </EditText>-->
+
     <Button
         android:id="@+id/button_confirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Confirmar"
         android:textSize="24dp"
+        android:background="@color/tigo_blue"
+        android:textColor="@color/white"
+        android:layout_margin="10dp"
         />
+
 </LinearLayout>

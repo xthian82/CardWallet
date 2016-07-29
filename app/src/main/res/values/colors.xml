@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="secondary_text">#727272</color>
+
+    <color name="tigo_yellow">#ebb730</color>
+    <color name="tigo_blue">#203979</color>
+    <color name="white">#FFFFFF</color>
 </resources>

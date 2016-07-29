@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CardWallet</string>
+    <string name="app_name">TigoPos</string>
 
     <!-- para login -->
     <string name="prompt_user">User</string>
@@ -19,5 +19,9 @@
     <string name="read_card_action">Read card</string>
     <string name="user_not_found">User not found</string>
     <string name="message_reset_info_volume">Please adjust the volume to maximum.</string>
+    <string name="action_new_transaction">New Transaction</string>
+
+    <string name="demo_number">+595981862177</string>
+
 
 </resources>

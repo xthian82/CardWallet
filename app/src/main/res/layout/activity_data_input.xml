@@ -7,52 +7,210 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@color/tigo_yellow"
     tools:context="itconsultores.com.py.testlogin.DataInputActivity">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/user_card_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="User 0987124555"
-            android:textSize="24dp" />
-
-        <TextView
-            android:id="@+id/user_data_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="User 0987124555"
-            android:textSize="24dp" />
-
-        <TextView
-            android:id="@+id/user_data_cell"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="User 0987124555"
-            android:textSize="24dp" />
-
 
         <EditText
             android:id="@+id/amount_charge"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:hint="@string/amount"
             android:shadowRadius="@android:integer/config_longAnimTime"
-
             android:inputType="numberDecimal"
-            android:digits="0123456789  1p">
-            <requestFocus />
+            android:textSize="40dp"
+            android:digits="0123456781p"
+            android:background="@color/white"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:textAlignment="textEnd"
+            >
         </EditText>
-        <Button
-            android:id="@+id/button_payment"
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Pagar"
-            android:textSize="24dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+
+            <Button
+                android:id="@+id/Btn7_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:text="7"
+                android:onClick="btn7Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn8_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_toRightOf="@id/Btn7_id"
+                android:text="8"
+                android:onClick="btn8Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn9_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_toRightOf="@id/Btn8_id"
+                android:text="9"
+                android:onClick="btn9Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn4_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn7_id"
+                android:text="4"
+                android:onClick="btn4Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn5_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn8_id"
+                android:layout_toRightOf="@id/Btn4_id"
+                android:text="5"
+                android:onClick="btn5Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn6_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn9_id"
+                android:layout_toRightOf="@id/Btn5_id"
+                android:text="6"
+                android:onClick="btn6Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn1_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn4_id"
+                android:text="1"
+                android:onClick="btn1Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+            android:id="@+id/Btn2_id"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_below="@id/Btn5_id"
+            android:layout_toRightOf="@id/Btn1_id"
+            android:text="2"
+            android:onClick="btn2Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
             />
+
+            <Button
+            android:id="@+id/Btn3_id"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_below="@id/Btn6_id"
+            android:layout_toRightOf="@id/Btn2_id"
+            android:text="3"
+            android:onClick="btn3Clicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btnzero_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn1_id"
+                android:text="0"
+                android:onClick="btnequalClicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btn3zero_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn1_id"
+                android:layout_toRightOf="@id/Btnzero_id"
+                android:text="000"
+                android:onClick="btndivideClicked"
+                android:textSize="30dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/Btnclear_id"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_below="@id/Btn1_id"
+                android:layout_toRightOf="@id/Btn3zero_id"
+                android:text="CE"
+                android:onClick="btndivideClicked"
+                android:textSize="40dp"
+                android:background="@color/tigo_blue"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/button_payment"
+                android:layout_width="240dp"
+                android:layout_height="70dp"
+                android:textSize="24dp"
+                android:layout_below="@id/Btnclear_id"
+                android:background="@drawable/tigo_money_cobrar_button"
+                android:layout_marginTop="5dp"
+                />
+
+
+        </RelativeLayout>
 
     </LinearLayout>
 </RelativeLayout>
