@@ -4,39 +4,36 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/tigo_yellow"
+    >
 
-<!--
-tools:context="itconsultores.com.py.testlogin.CardReadActivity" -->
 
-
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:elevation="8dp">
+        android:elevation="8dp"
+        >
         <ImageView
             android:id="@+id/card_img_gif"
             android:layout_width="match_parent"
             android:adjustViewBounds="true"
-            android:layout_height="match_parent"
-            android:src="@drawable/img_acr35"
+            android:layout_height="400dp"
+            android:src="@drawable/logo_nfc"
             />
-
-    </FrameLayout>
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:layout_margin="8dp"
-        android:elevation="4dp">
-
         <Button
             android:id="@+id/button_read"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/read_card_action" />
-    </FrameLayout>
+            android:background="@color/tigo_blue"
+            android:layout_below="@+id/card_img_gif"
+            android:text="@string/read_card_action"
+            android:textColor="@color/white"
+            />
+
+    </RelativeLayout>
 
 </LinearLayout>

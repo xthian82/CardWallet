@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.acs.audiojack.AudioJackReader;
@@ -38,6 +40,8 @@ public class CardReadActivity extends AppCompatActivity {
                                 | AudioJackReader.PICC_CARD_TYPE_FELICA_424KBPS
                                 | AudioJackReader.PICC_CARD_TYPE_AUTO_RATS;
     private byte[] mPiccCommandApdu;
+
+    MediaPlayer mp;
 
 
     private final BroadcastReceiver mHeadsetPlugReceiver = new BroadcastReceiver() {
@@ -170,6 +174,23 @@ public class CardReadActivity extends AppCompatActivity {
 
         // PICC ATR callback.
         mReader.setOnPiccAtrAvailableListener(new OnPiccAtrAvailableListener());
+
+        mp = MediaPlayer.create(this, R.raw.sound);
+
+        final ImageView imageView  = (ImageView) findViewById(R.id.card_img_gif);
+
+        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                mp.start();
+                Intent dataInputIntent = new Intent(getApplicationContext(), DataInputActivity.class);
+                //dataInputIntent.putExtra(CardReadActivity.USER_DATA_TAG, user);
+                startActivity(dataInputIntent);
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -291,6 +312,7 @@ public class CardReadActivity extends AppCompatActivity {
 
             if (mPiccResponseApduReady) {
                 String data = Utils.toHexString(mPiccResponseApdu);
+
                 Log.d(TAG, "Leido =>" + data);
                 user = getUserData(data);
 
@@ -333,6 +355,7 @@ public class CardReadActivity extends AppCompatActivity {
 
             Log.d(TAG, "comparing user");
             if (user != null) {
+                mp.start();
                 Intent dataInputIntent = new Intent(getApplicationContext(), DataInputActivity.class);
                 dataInputIntent.putExtra(CardReadActivity.USER_DATA_TAG, user);
                 startActivity(dataInputIntent);
